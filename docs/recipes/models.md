@@ -578,6 +578,18 @@ ts serve zai-org/GLM-5.3-Flash \
   --speculative-num-draft-tokens 3
 ```
 
+For experimental SM120 validation, use TP8 with EP1 and
+`--moe-backend triton --kv-cache-dtype bfloat16 --force-deterministic-rsag`.
+The DSA wrapper uses the portable MLA delegate and Triton sparse attention;
+DeepGEMM DSA, KPool, and mHC registrations exclude SM12x. The NCCL override
+avoids multicast collectives on systems without NVLink multicast support.
+Build the native CUDA extensions for SM120. If the installed Hadamard wheel
+lacks an SM120 kernel, set
+`TOKENSPEED_KERNEL_OVERRIDE_TRANSFORM_HADAMARD_TRANSFORM=triton_hadamard_transform_128`.
+Text and image requests and a concurrent GSM8K run have been validated with
+decode CUDA graphs. Keep `--disable-prefill-graph` and speculative decoding
+disabled for this configuration; EP and speculative decoding are not validated.
+
 ### AMD
 
 On MI350X/MI355X (gfx950), use tensor parallel size 4 with expert parallelism
